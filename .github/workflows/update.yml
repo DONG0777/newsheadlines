@@ -2,18 +2,21 @@ name: Auto News Update
 
 on:
   schedule:
-    - cron: '0 0,6,12,18 * * *' # দিনে ৪ বার অটোমেটিক চলবে
-  workflow_dispatch: # আপনি চাইলে নিজেও রান করতে পারবেন
+    - cron: '0 0,6,12,18 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    # এখানে পারমিশন যোগ করা হলো যাতে কোডটি ফাইল রাইট করতে পারে
+    permissions:
+      contents: write
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
