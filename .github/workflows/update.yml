@@ -1,0 +1,34 @@
+name: Auto News Update
+
+on:
+  schedule:
+    - cron: '0 0,6,12,18 * * *' # দিনে ৪ বার অটোমেটিক চলবে
+  workflow_dispatch: # আপনি চাইলে নিজেও রান করতে পারবেন
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install Libraries
+        run: pip install feedparser google-generativeai
+
+      - name: Run AI Scraper
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scraper_ai.py
+
+      - name: Save and Push Changes
+        run: |
+          git config --global user.name "AI-Analyst-Bot"
+          git config --global user.email "bot@news.com"
+          git add news_data.json
+          git commit -m "Automated AI Analysis Updated" || exit 0
+          git push
