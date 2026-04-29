@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>এআই রাজনৈতিক বিশ্লেষক - পশ্চিমবঙ্গ</title>
+    <style>
+        body { font-family: 'Hind Siliguri', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        .news-card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-left: 5px solid #1a73e8; }
+        .source-badge { background: #e8f0fe; color: #1a73e8; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        h2 { color: #202124; margin: 15px 0; font-size: 1.5rem; }
+        .ai-analysis { background: #fff9c4; padding: 15px; border-radius: 10px; border-left: 5px solid #fbc02d; font-style: italic; color: #333; }
+        .meta { font-size: 0.8rem; color: #70757a; margin-bottom: 10px; }
+        .btn-read-more { display: inline-block; margin-top: 15px; color: #1a73e8; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>বাংলার রাজনীতি: AI বিশ্লেষণ</h1>
+        <p>সরাসরি বিভিন্ন সংবাদপত্রের হেডলাইন থেকে এআই-এর মাধ্যমে তৈরি বিশ্লেষণ</p>
+        <div id="news-container">লোডিং...</div>
+    </div>
+
+    <script>
+        fetch('news_data.json')
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('news-container');
+                container.innerHTML = '';
+                data.forEach(item => {
+                    container.innerHTML += `
+                        <div class="news-card">
+                            <span class="source-badge">${item.source}</span>
+                            <div class="meta">${item.time}</div>
+                            <h2>${item.title}</h2>
+                            <div class="ai-analysis">
+                                <strong>বিশেষজ্ঞ বিশ্লেষণ:</strong><br>
+                                ${item.ai_gist}
+                            </div>
+                            <a href="${item.link}" class="btn-read-more" target="_blank">মূল সংবাদটি পড়ুন →</a>
+                        </div>
+                    `;
+                });
+            });
+    </script>
+</body>
+</html>
