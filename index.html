@@ -3,46 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>এআই রাজনৈতিক বিশ্লেষক - পশ্চিমবঙ্গ</title>
+    <title>বাংলার রাজনীতি: এআই বিশ্লেষণ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Hind Siliguri', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: auto; }
-        .news-card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-left: 5px solid #1a73e8; }
-        .source-badge { background: #e8f0fe; color: #1a73e8; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
-        h2 { color: #202124; margin: 15px 0; font-size: 1.5rem; }
-        .ai-analysis { background: #fff9c4; padding: 15px; border-radius: 10px; border-left: 5px solid #fbc02d; font-style: italic; color: #333; }
-        .meta { font-size: 0.8rem; color: #70757a; margin-bottom: 10px; }
-        .btn-read-more { display: inline-block; margin-top: 15px; color: #1a73e8; text-decoration: none; font-weight: bold; }
+        body { font-family: 'Hind Siliguri', sans-serif; background: #f4f7f6; margin: 0; padding: 0; color: #333; }
+        header { background: #1a73e8; color: white; padding: 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { max-width: 800px; margin: 20px auto; padding: 10px; }
+        .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); position: relative; overflow: hidden; }
+        .card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 6px; background: #1a73e8; }
+        .source { font-size: 0.85rem; color: #1a73e8; font-weight: bold; }
+        .time { font-size: 0.75rem; color: #777; margin-bottom: 10px; }
+        h2 { font-size: 1.4rem; margin: 10px 0; line-height: 1.4; color: #111; }
+        .analysis-box { background: #fffde7; border: 1px solid #fff59d; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #fbc02d; font-style: italic; }
+        .footer-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { flex: 1; text-align: center; padding: 10px; border-radius: 5px; text-decoration: none; font-size: 0.9rem; font-weight: bold; }
+        .btn-source { background: #f1f3f4; color: #555; }
+        .btn-wa { background: #25d366; color: white; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>বাংলার রাজনীতি: AI বিশ্লেষণ</h1>
-        <p>সরাসরি বিভিন্ন সংবাদপত্রের হেডলাইন থেকে এআই-এর মাধ্যমে তৈরি বিশ্লেষণ</p>
-        <div id="news-container">লোডিং...</div>
-    </div>
 
-    <script>
-        fetch('news_data.json')
-            .then(res => res.json())
-            .then(data => {
-                const container = document.getElementById('news-container');
-                container.innerHTML = '';
-                data.forEach(item => {
-                    container.innerHTML += `
-                        <div class="news-card">
-                            <span class="source-badge">${item.source}</span>
-                            <div class="meta">${item.time}</div>
-                            <h2>${item.title}</h2>
-                            <div class="ai-analysis">
-                                <strong>বিশেষজ্ঞ বিশ্লেষণ:</strong><br>
-                                ${item.ai_gist}
-                            </div>
-                            <a href="${item.link}" class="btn-read-more" target="_blank">মূল সংবাদটি পড়ুন →</a>
+<header>
+    <h1>বাংলার রাজনীতি: AI বিশ্লেষণ</h1>
+    <p>সংবাদপত্রের ভিড়ে শুধু গুরুত্বপূর্ণ খবরের সঠিক ব্যাখ্যা</p>
+</header>
+
+<div class="container" id="news-list">
+    <p style="text-align: center;">খবর লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...</p>
+</div>
+
+<script>
+    fetch('news_data.json')
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById('news-list');
+            list.innerHTML = '';
+            data.forEach(item => {
+                const waLink = `whatsapp://send?text=${encodeURIComponent('*' + item.title + '*\n\n' + item.analysis + '\n\nআরও পড়ুন: ' + window.location.href)}`;
+                list.innerHTML += `
+                    <div class="card">
+                        <div class="source">${item.source}</div>
+                        <div class="time">আপডেট: ${item.time}</div>
+                        <h2>${item.title}</h2>
+                        <div class="analysis-box">
+                            <strong>বিশেষজ্ঞের বিশ্লেষণ:</strong>
+                            ${item.analysis}
                         </div>
-                    `;
-                });
+                        <div class="footer-btns">
+                            <a href="${item.link}" target="_blank" class="btn btn-source">মূল সোর্স</a>
+                            <a href="${waLink}" class="btn btn-wa">WhatsApp শেয়ার</a>
+                        </div>
+                    </div>
+                `;
             });
-    </script>
+        }).catch(err => {
+            document.getElementById('news-list').innerHTML = '<p style="text-align:center;">এখনও কোনো খবর আপডেট হয়নি। প্রথম আপডেটের জন্য অপেক্ষা করুন।</p>';
+        });
+</script>
+
 </body>
 </html>
