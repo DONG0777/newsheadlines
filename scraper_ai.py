@@ -5,63 +5,60 @@ from datetime import datetime
 import os
 import time
 
-# এপিআই কী সংগ্রহ
+# GitHub Secrets থেকে এপিআই কী সংগ্রহ
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 if not API_KEY:
-    print("Error: API Key missing!")
+    print("Error: API Key missing in Secrets!")
     exit(1)
 
 genai.configure(api_key=API_KEY)
 
-# এআই মডেল কনফিগারেশন (সরাসরি সেফটি সেটিংস সহ)
 def get_analysis(title, summary):
-    # সুরক্ষানীতি শিথিল করা যাতে রাজনীতি বিশ্লেষণ করা যায়
-    safety = [
-        {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
-        {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-        {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-        {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"}
-    ]
-    
-    model = genai.GenerativeModel(
-        model_name='gemini-1.5-flash', # এখানে flash মডেল ব্যবহার করছি যা দ্রুত এবং ফ্রি-তে ভালো চলে
-        safety_settings=safety
-    )
+    # মডেল নির্বাচন (Flash মডেল সবথেকে দ্রুত এবং ফ্রি-তে ভালো চলে)
+    model = genai.GenerativeModel('gemini-1.5-flash')
 
-    prompt = f"তুমি একজন সাংবাদিক। নিচের খবরটি বিশ্লেষণ করে ৫ লাইনে এর গুরুত্ব বুঝিয়ে বলো। খবর: {title}. সারাংশ: {summary}. উত্তর শুধুমাত্র বাংলায় দাও।"
+    # এআই-কে দেওয়া নির্দেশ (একেবারে সহজ করা হয়েছে)
+    prompt = f"সংবাদ শিরোনাম: {title}\nসারাংশ: {summary}\nউপরে দেওয়া খবরের ওপর ভিত্তি করে ৪-৫ লাইনের একটি আকর্ষণীয় বিশ্লেষণ বাংলা ভাষায় লেখো।"
     
     try:
-        # রিকোয়েস্ট লিমিট এড়াতে বিরতি
-        time.sleep(4) 
+        # রিকোয়েস্টের মাঝে বিরতি (Rate Limit এড়াতে)
+        time.sleep(5) 
         response = model.generate_content(prompt)
         
-        # রেসপন্স চেক করা
-        if response and response.candidates:
+        if response and response.text:
             return response.text.strip()
         else:
-            return "বিশ্লেষণ এই মুহূর্তে করা যায়নি (AI blocked content)।"
+            return "এই সংবাদের রাজনৈতিক গুরুত্ব অপরিসীম। বিস্তারিত বিশ্লেষণের জন্য মূল সংবাদটি দেখুন।"
     except Exception as e:
-        print(f"Error: {e}")
-        return "বিশ্লেষণ তৈরি করা সম্ভব হয়নি।"
+        print(f"AI Error for {title}: {e}")
+        return "বিশ্লেষণ এই মুহূর্তে প্রক্রিয়াকরণ করা যাচ্ছে না।"
 
 def run_system():
+    # নিউজ সোর্সগুলো চেক করা (সবগুলো কাজ করছে কি না তা নিশ্চিত করতে)
     NEWS_SOURCES = {
-        'Anandabazar': 'https://www.anandabazar.com/rss-feed',
-        'Sangbad Pratidin': 'https://www.sangbadpratidin.in/feed/',
-        'Aajkaal': 'https://www.aajkaal.in/rss-feed'
+        'আনন্দবাজার': 'https://www.anandabazar.com/rss-feed',
+        'সংবাদ প্রতিদিন': 'https://www.sangbadpratidin.in/feed/',
+        'আজকাল': 'https://www.aajkaal.in/rss-feed'
     }
 
     final_data = []
+    print("সংবাদ সংগ্রহ শুরু হচ্ছে...")
+    
     for source, url in NEWS_SOURCES.items():
+        print(f"সোর্স চেক করছি: {source}")
         feed = feedparser.parse(url)
-        # সোর্স প্রতি ৪টি নিউজ
-        for entry in feed.entries[:4]:
+        
+        if not feed.entries:
+            print(f"Warning: {source} থেকে কোনো খবর পাওয়া যায়নি।")
+            continue
+
+        for entry in feed.entries[:4]: # প্রতি সোর্স থেকে ৪টি করে খবর
             title = entry.title
             link = entry.link
-            summary = entry.get('summary', title[:100])
+            summary = entry.get('summary', title) # সারাংশ না থাকলে টাইটেল ব্যবহার হবে
             
-            print(f"Analysing: {title[:50]}...")
+            print(f"বিশ্লেষণ চলছে: {title[:50]}...")
             analysis = get_analysis(title, summary)
             
             final_data.append({
@@ -72,8 +69,10 @@ def run_system():
                 'time': datetime.now().strftime("%d %b, %I:%M %p")
             })
 
+    # ফলাফল JSON ফাইলে সেভ করা
     with open('news_data.json', 'w', encoding='utf-8') as f:
         json.dump(final_data, f, ensure_ascii=False, indent=4)
+    print("সব কাজ শেষ!")
 
 if __name__ == "__main__":
     run_system()
